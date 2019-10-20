@@ -38,7 +38,8 @@ namespace ConsoleMenu
 
 		public void SetTitle(string title)
 		{
-			Title = title;
+			if(!string.IsNullOrEmpty(title))
+				Title = title;
 		}
 
 
