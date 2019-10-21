@@ -14,8 +14,10 @@ namespace ConsoleMenu
 		private const string CMENU_DEFAULT_MARKED_INDICATOR = "[X]";
 		private const string CMENU_DEFAULT_UNMARKED_INDICATOR = "[ ]";
 		private const string CMENU_DEFAULT_TITLE = "MENU";
-		private const int CMENU_SELECTION_INDICATOR_X_POS = 1;
+		private const int CMENU_SELECTION_INDICATOR_X_POS = 0;
 		private const int CMENU_SELECTION_INDICATOR_Y_START_POS = 4;
+		private const ConsoleColor CMENU_DEFAULT_TITLE_COLOR = ConsoleColor.White;
+		private const ConsoleColor CMENU_DEFAULT_FOOTER_COLOR = ConsoleColor.DarkGreen;
 		#endregion
 
 
@@ -33,6 +35,9 @@ namespace ConsoleMenu
 		public string MarkedIndicator { get; private set; } = CMENU_DEFAULT_MARKED_INDICATOR;
 		public string UnmarkedIndicator { get; private set; } = CMENU_DEFAULT_UNMARKED_INDICATOR;
 		public string Title { get; private set; } = CMENU_DEFAULT_TITLE;
+
+		public ConsoleColor TitleColor { get; set; } = CMENU_DEFAULT_TITLE_COLOR;
+		public ConsoleColor FooterColor { get; set; } = CMENU_DEFAULT_FOOTER_COLOR;
 		#endregion
 
 
@@ -40,8 +45,9 @@ namespace ConsoleMenu
 		public CMenu()
 		{
 			_items = new ObservableCollection<IConsoleProgram>();
-			Items = new ReadOnlyObservableCollection<IConsoleProgram>(_items);
 			_stringBuilder = new StringBuilder();
+
+			Items = new ReadOnlyObservableCollection<IConsoleProgram>(_items);
 		}
 		#endregion
 
@@ -74,6 +80,8 @@ namespace ConsoleMenu
 		{
 			MarkedIndicator = CMENU_DEFAULT_UNMARKED_INDICATOR.Replace(' ', indicator);
 		}
+
+		public void Redraw() => PrintMenu();
 		#endregion
 
 
@@ -95,7 +103,9 @@ namespace ConsoleMenu
 			_stringBuilder.Clear();
 			for (int i = 0; i < Console.WindowWidth / 2 - Title.Length / 2; i++)
 				_stringBuilder.Append(" ");
+			ConsoleFormattingUtil.PushColor(TitleColor);
 			Console.WriteLine(_stringBuilder + Title);
+			ConsoleFormattingUtil.PopColor();
 		}
 
 		private void PrintEntireLine(char c)
@@ -111,7 +121,6 @@ namespace ConsoleMenu
 			_itemsYPositions = new int[_items.Count];
 			for (int i = 0; i < _items.Count; i++)
 			{
-				_itemsYPositions[i] = CMENU_SELECTION_INDICATOR_Y_START_POS + i;
 				PrintMenuItem(_selection == i, i);
 			}
 		}
@@ -120,7 +129,7 @@ namespace ConsoleMenu
 		{
 			for (int i = 0; i < _itemsYPositions.Length; i++)
 			{
-				Console.SetCursorPosition(0, _itemsYPositions[i]);
+				Console.SetCursorPosition(CMENU_SELECTION_INDICATOR_X_POS, i + CMENU_SELECTION_INDICATOR_Y_START_POS);
 				Console.Write(selection == i ? MarkedIndicator : UnmarkedIndicator);
 			}
 		}
@@ -134,12 +143,12 @@ namespace ConsoleMenu
 		private void PrintFooter()
 		{
 			string footerString = CMENU_FOOTER_TEXT;
-			Console.ForegroundColor = ConsoleColor.Green;
+			ConsoleFormattingUtil.PushColor(FooterColor);
 			int spacesCount = Console.WindowWidth / 2 - footerString.Length / 2;
 			for (int i = 0; i < spacesCount; i++)
 				footerString = footerString.Insert(0, " ");
-			ConsoleFormattingUtil.WriteOnBottomLine(footerString + "\n\n");
-			Console.ForegroundColor = ConsoleColor.White;
+			ConsoleFormattingUtil.WriteOnBottomLine(footerString, 1);
+			ConsoleFormattingUtil.PopColor();
 		}
 
 		private void SelectItem(int index)
