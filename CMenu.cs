@@ -45,6 +45,11 @@ namespace ConsoleMenu
 				Title = title;
 		}
 
+		public void SetSelectionIndicatorChar(char indicator)
+		{
+			MarkedIndicator = CMENU_DEFAULT_UNMARKED_INDICATOR.Replace(' ', indicator);
+		}
+
 
 		private void PrintMenu()
 		{
