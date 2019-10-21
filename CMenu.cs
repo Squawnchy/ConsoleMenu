@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 
 namespace ConsoleMenu
@@ -13,13 +14,17 @@ namespace ConsoleMenu
 		private const string CMENU_DEFAULT_MARKED_INDICATOR = "[X]";
 		private const string CMENU_DEFAULT_UNMARKED_INDICATOR = "[ ]";
 		private const string CMENU_DEFAULT_TITLE = "MENU";
+		private const int CMENU_SELECTION_INDICATOR_X_POS = 1;
+		private const int CMENU_SELECTION_INDICATOR_Y_START_POS = 4;
 		#endregion
 
 
 		#region privates
 		private int _selection = 0;
+		private int[] _itemsYPositions;
 		private ObservableCollection<IConsoleProgram> _items;
 		private StringBuilder _stringBuilder;
+		private bool _isMenuDrawn;
 		#endregion
 
 
@@ -52,7 +57,10 @@ namespace ConsoleMenu
 			Console.CursorVisible = false;
 			do
 			{
-				PrintMenu();
+				if (!_isMenuDrawn)
+					PrintMenu();
+				else
+					RefreshAllMenuItems(_selection);
 			} while (AcceptNavigate());
 		}
 
@@ -79,6 +87,7 @@ namespace ConsoleMenu
 			PrintEntireLine('-');
 			Console.WriteLine();
 			PrintAllMenuItems();
+			_isMenuDrawn = true;
 		}
 
 		private void PrintTitle()
@@ -99,8 +108,21 @@ namespace ConsoleMenu
 
 		private void PrintAllMenuItems()
 		{
+			_itemsYPositions = new int[_items.Count];
 			for (int i = 0; i < _items.Count; i++)
+			{
+				_itemsYPositions[i] = CMENU_SELECTION_INDICATOR_Y_START_POS + i;
 				PrintMenuItem(_selection == i, i);
+			}
+		}
+
+		private void RefreshAllMenuItems(int selection)
+		{
+			for (int i = 0; i < _itemsYPositions.Length; i++)
+			{
+				Console.SetCursorPosition(0, _itemsYPositions[i]);
+				Console.Write(selection == i ? MarkedIndicator : UnmarkedIndicator);
+			}
 		}
 
 		private void PrintMenuItem(bool marked, int itemIndex)
@@ -123,6 +145,7 @@ namespace ConsoleMenu
 		private void SelectItem(int index)
 		{
 			Console.Clear();
+			_isMenuDrawn = false;
 			_items[index].Start();
 			Console.ReadKey();
 		}
