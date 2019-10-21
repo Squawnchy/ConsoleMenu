@@ -8,8 +8,11 @@ namespace ConsoleMenu
 	public class CMenu
 	{
 		private int _selection = 0;
+		private const string CMENU_FOOTER_TEXT = "[UP-ARROW / DOWN-ARROW] Navigate, [ENTER] Select, [ESC] Exit";
+		private const string CMENU_DEFAULT_MARKED_INDICATOR = "[X]";
+		private const string CMENU_DEFAULT_UNMARKED_INDICATOR = "[ ]";
+		private const string CMENU_DEFAULT_TITLE = "MENU";
 		private ObservableCollection<IConsoleProgram> _items = new ObservableCollection<IConsoleProgram>();
-
 
 		public ReadOnlyObservableCollection<IConsoleProgram> Items { get; private set; }
 		public string MarkedIndicator { get; set; } = "[X]";
@@ -67,7 +70,7 @@ namespace ConsoleMenu
 
 		private void PrintFooter()
 		{
-			string footerString = "[UP-ARROW / DOWN-ARROW] Navigate, [ENTER] Select, [ESC] Exit";
+			string footerString = CMENU_FOOTER_TEXT;
 			Console.ForegroundColor = ConsoleColor.Green;
 			int spacesCount = Console.WindowWidth / 2 - footerString.Length / 2;
 			for (int i = 0; i < spacesCount; i++)
