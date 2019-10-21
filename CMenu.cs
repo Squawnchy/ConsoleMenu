@@ -15,9 +15,9 @@ namespace ConsoleMenu
 		private ObservableCollection<IConsoleProgram> _items = new ObservableCollection<IConsoleProgram>();
 
 		public ReadOnlyObservableCollection<IConsoleProgram> Items { get; private set; }
-		public string MarkedIndicator { get; set; } = "[X]";
-		public string UnmarkedIndicator { get; set; } = "[ ]";
-		public string Title { get; private set; } = "MENU";
+		public string MarkedIndicator { get; private set; } = CMENU_DEFAULT_MARKED_INDICATOR;
+		public string UnmarkedIndicator { get; private set; } = CMENU_DEFAULT_UNMARKED_INDICATOR;
+		public string Title { get; private set; } = CMENU_DEFAULT_TITLE;
 
 
 		public CMenu()
