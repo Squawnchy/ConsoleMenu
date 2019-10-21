@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsoleMenu.Utils;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
@@ -7,13 +8,18 @@ namespace ConsoleMenu
 {
 	public class CMenu
 	{
-		#region privates
-		private int _selection = 0;
+		#region constants
 		private const string CMENU_FOOTER_TEXT = "[UP-ARROW / DOWN-ARROW] Navigate, [ENTER] Select, [ESC] Exit";
 		private const string CMENU_DEFAULT_MARKED_INDICATOR = "[X]";
 		private const string CMENU_DEFAULT_UNMARKED_INDICATOR = "[ ]";
 		private const string CMENU_DEFAULT_TITLE = "MENU";
-		private ObservableCollection<IConsoleProgram> _items = new ObservableCollection<IConsoleProgram>();
+		#endregion
+
+
+		#region privates
+		private int _selection = 0;
+		private ObservableCollection<IConsoleProgram> _items;
+		private StringBuilder _stringBuilder;
 		#endregion
 
 
@@ -28,7 +34,9 @@ namespace ConsoleMenu
 		#region ctor
 		public CMenu()
 		{
+			_items = new ObservableCollection<IConsoleProgram>();
 			Items = new ReadOnlyObservableCollection<IConsoleProgram>(_items);
+			_stringBuilder = new StringBuilder();
 		}
 		#endregion
 
@@ -75,17 +83,18 @@ namespace ConsoleMenu
 
 		private void PrintTitle()
 		{
+			_stringBuilder.Clear();
 			for (int i = 0; i < Console.WindowWidth / 2 - Title.Length / 2; i++)
-				Console.Write(" ");
-			Console.WriteLine(Title);
+				_stringBuilder.Append(" ");
+			Console.WriteLine(_stringBuilder + Title);
 		}
 
 		private void PrintEntireLine(char c)
 		{
-			string print = "";
+			_stringBuilder.Clear();
 			for (int i = 0; i < Console.WindowWidth; i++)
-				print += c;
-			Console.WriteLine(print);
+				_stringBuilder.Append(c);
+			Console.Write(_stringBuilder);
 		}
 
 		private void PrintAllMenuItems()
@@ -107,7 +116,7 @@ namespace ConsoleMenu
 			int spacesCount = Console.WindowWidth / 2 - footerString.Length / 2;
 			for (int i = 0; i < spacesCount; i++)
 				footerString = footerString.Insert(0, " ");
-			WriteOnBottomLine(footerString + "\n\n");
+			ConsoleFormattingUtil.WriteOnBottomLine(footerString + "\n\n");
 			Console.ForegroundColor = ConsoleColor.White;
 		}
 
