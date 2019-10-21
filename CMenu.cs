@@ -7,24 +7,33 @@ namespace ConsoleMenu
 {
 	public class CMenu
 	{
+		#region privates
 		private int _selection = 0;
 		private const string CMENU_FOOTER_TEXT = "[UP-ARROW / DOWN-ARROW] Navigate, [ENTER] Select, [ESC] Exit";
 		private const string CMENU_DEFAULT_MARKED_INDICATOR = "[X]";
 		private const string CMENU_DEFAULT_UNMARKED_INDICATOR = "[ ]";
 		private const string CMENU_DEFAULT_TITLE = "MENU";
 		private ObservableCollection<IConsoleProgram> _items = new ObservableCollection<IConsoleProgram>();
+		#endregion
 
+
+		#region properties
 		public ReadOnlyObservableCollection<IConsoleProgram> Items { get; private set; }
 		public string MarkedIndicator { get; private set; } = CMENU_DEFAULT_MARKED_INDICATOR;
 		public string UnmarkedIndicator { get; private set; } = CMENU_DEFAULT_UNMARKED_INDICATOR;
 		public string Title { get; private set; } = CMENU_DEFAULT_TITLE;
+		#endregion
 
 
+		#region ctor
 		public CMenu()
 		{
 			Items = new ReadOnlyObservableCollection<IConsoleProgram>(_items);
 		}
+		#endregion
 
+
+		#region public methods
 		public void AddItem(IConsoleProgram program)
 		{
 			_items.Add(program);
@@ -41,7 +50,7 @@ namespace ConsoleMenu
 
 		public void SetTitle(string title)
 		{
-			if(!string.IsNullOrEmpty(title))
+			if (!string.IsNullOrEmpty(title))
 				Title = title;
 		}
 
@@ -49,8 +58,10 @@ namespace ConsoleMenu
 		{
 			MarkedIndicator = CMENU_DEFAULT_UNMARKED_INDICATOR.Replace(' ', indicator);
 		}
+		#endregion
 
 
+		#region private methods
 		private void PrintMenu()
 		{
 			Console.Clear();
@@ -132,4 +143,5 @@ namespace ConsoleMenu
 			Console.SetCursorPosition(x, y);
 		}
 	}
+	#endregion
 }
