@@ -66,14 +66,30 @@ namespace ConsoleMenu
 		{
 			Console.Clear();
 			PrintFooter();
-			for (int i = 0; i < Console.WindowWidth; i++)
-				Console.Write("-");
+			PrintEntireLine('-');
+			PrintTitle();
+			PrintEntireLine('-');
+			Console.WriteLine();
+			PrintAllMenuItems();
+		}
+
+		private void PrintTitle()
+		{
 			for (int i = 0; i < Console.WindowWidth / 2 - Title.Length / 2; i++)
 				Console.Write(" ");
 			Console.WriteLine(Title);
+		}
+
+		private void PrintEntireLine(char c)
+		{
+			string print = "";
 			for (int i = 0; i < Console.WindowWidth; i++)
-				Console.Write("-");
-			Console.WriteLine();
+				print += c;
+			Console.WriteLine(print);
+		}
+
+		private void PrintAllMenuItems()
+		{
 			for (int i = 0; i < _items.Count; i++)
 				PrintMenuItem(_selection == i, i);
 		}
@@ -102,16 +118,6 @@ namespace ConsoleMenu
 			Console.ReadKey();
 		}
 
-		private void NavigateUp()
-		{
-			_selection = _selection == 0 ? _items.Count - 1 : _selection - 1;
-		}
-
-		private void NavigateDown()
-		{
-			_selection = _selection == _items.Count - 1 ? 0 : _selection + 1;
-		}
-
 		// false = exit
 		private bool AcceptNavigate()
 		{
@@ -129,18 +135,17 @@ namespace ConsoleMenu
 				case ConsoleKey.Escape:
 					return false;
 			}
-
 			return true;
 		}
 
-		private void WriteOnBottomLine(string text)
+		private void NavigateUp()
 		{
-			int x = Console.CursorLeft;
-			int y = Console.CursorTop;
-			Console.CursorTop = Console.WindowTop + Console.WindowHeight - 2;
-			Console.Write(text);
-			// Restore previous position
-			Console.SetCursorPosition(x, y);
+			_selection = _selection == 0 ? _items.Count - 1 : _selection - 1;
+		}
+
+		private void NavigateDown()
+		{
+			_selection = _selection == _items.Count - 1 ? 0 : _selection + 1;
 		}
 	}
 	#endregion
