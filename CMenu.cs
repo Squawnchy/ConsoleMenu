@@ -1,9 +1,7 @@
 ﻿using ConsoleMenu.Utils;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Text;
 
 namespace ConsoleMenu
 {
@@ -11,33 +9,35 @@ namespace ConsoleMenu
 	{
 		#region constants
 		private const string CMENU_FOOTER_TEXT = "[UP-ARROW / DOWN-ARROW] Navigate, [ENTER] Select, [ESC] Exit";
-		private const string CMENU_DEFAULT_MARKED_INDICATOR = "[X]";
-		private const string CMENU_DEFAULT_UNMARKED_INDICATOR = "[ ]";
 		private const string CMENU_DEFAULT_TITLE = "MENU";
 		private const int CMENU_SELECTION_INDICATOR_X_POS = 0;
 		private const int CMENU_SELECTION_INDICATOR_Y_START_POS = 4;
 		private const ConsoleColor CMENU_DEFAULT_TITLE_COLOR = ConsoleColor.White;
 		private const ConsoleColor CMENU_DEFAULT_FOOTER_COLOR = ConsoleColor.DarkGreen;
+		private const ConsoleColor CMENU_DEFAULT_HIGHLIGHT_COLOR = ConsoleColor.White;
+		private const ConsoleColor CMENU_DEFAULT_TEXT_COLOR = ConsoleColor.Black;
 		#endregion
 
 
 		#region privates
 		private int _selection = 0;
 		private int[] _itemsYPositions;
-		private ObservableCollection<IConsoleProgram> _items;
-		private StringBuilder _stringBuilder;
 		private bool _isMenuDrawn;
+		private CMenuDrawer _cMenuDrawer;
+		private ObservableCollection<IConsoleProgram> _items;
 		#endregion
 
 
 		#region properties
 		public ReadOnlyObservableCollection<IConsoleProgram> Items { get; private set; }
-		public string MarkedIndicator { get; private set; } = CMENU_DEFAULT_MARKED_INDICATOR;
-		public string UnmarkedIndicator { get; private set; } = CMENU_DEFAULT_UNMARKED_INDICATOR;
-		public string Title { get; private set; } = CMENU_DEFAULT_TITLE;
+
+		public string Title { get; set; } = CMENU_DEFAULT_TITLE;
+		public string Footer { get; set; } = CMENU_FOOTER_TEXT;
 
 		public ConsoleColor TitleColor { get; set; } = CMENU_DEFAULT_TITLE_COLOR;
 		public ConsoleColor FooterColor { get; set; } = CMENU_DEFAULT_FOOTER_COLOR;
+		public ConsoleColor HiglightColor { get; set; } = CMENU_DEFAULT_HIGHLIGHT_COLOR;
+		public ConsoleColor TextColor { get; set; } = CMENU_DEFAULT_TEXT_COLOR;
 		#endregion
 
 
@@ -45,21 +45,25 @@ namespace ConsoleMenu
 		public CMenu()
 		{
 			_items = new ObservableCollection<IConsoleProgram>();
-			_stringBuilder = new StringBuilder();
-
 			Items = new ReadOnlyObservableCollection<IConsoleProgram>(_items);
 		}
 		#endregion
 
 
 		#region public methods
-		public void AddItem(IConsoleProgram program)
-		{
-			_items.Add(program);
-		}
+		/// <summary>
+		/// generic add a Type whic derives from <see cref="IConsoleProgram"/> to the menu-item collection
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		public void AddItem<T>() where T : IConsoleProgram , new() =>_items.Add(new T());
 
+		/// <summary>
+		/// display the menu
+		/// </summary>
 		public void Show()
 		{
+			_cMenuDrawer = new CMenuDrawer();
+
 			Console.CursorVisible = false;
 			do
 			{
@@ -70,17 +74,9 @@ namespace ConsoleMenu
 			} while (AcceptNavigate());
 		}
 
-		public void SetTitle(string title)
-		{
-			if (!string.IsNullOrEmpty(title))
-				Title = title;
-		}
-
-		public void SetSelectionIndicatorChar(char indicator)
-		{
-			MarkedIndicator = CMENU_DEFAULT_UNMARKED_INDICATOR.Replace(' ', indicator);
-		}
-
+		/// <summary>
+		/// redraw the menu
+		/// </summary>
 		public void Redraw() => PrintMenu();
 		#endregion
 
@@ -88,74 +84,57 @@ namespace ConsoleMenu
 		#region private methods
 		private void PrintMenu()
 		{
-			Console.Clear();
-			PrintFooter();
-			PrintEntireLine('-');
-			PrintTitle();
-			PrintEntireLine('-');
-			Console.WriteLine();
+			_cMenuDrawer.ClearScreen();
+			_cMenuDrawer.PrintFooter(Footer, FooterColor);
+			_cMenuDrawer.FillLineWithChar('-');
+			_cMenuDrawer.PrintTitle(Title, TitleColor);
+			_cMenuDrawer.FillLineWithChar('-');
+			_cMenuDrawer.NewLine();
 			PrintAllMenuItems();
 			_isMenuDrawn = true;
-		}
-
-		private void PrintTitle()
-		{
-			_stringBuilder.Clear();
-			for (int i = 0; i < Console.WindowWidth / 2 - Title.Length / 2; i++)
-				_stringBuilder.Append(" ");
-			ConsoleFormattingUtil.PushColor(TitleColor);
-			Console.WriteLine(_stringBuilder + Title);
-			ConsoleFormattingUtil.PopColor();
-		}
-
-		private void PrintEntireLine(char c)
-		{
-			_stringBuilder.Clear();
-			for (int i = 0; i < Console.WindowWidth; i++)
-				_stringBuilder.Append(c);
-			Console.Write(_stringBuilder);
 		}
 
 		private void PrintAllMenuItems()
 		{
 			_itemsYPositions = new int[_items.Count];
 			for (int i = 0; i < _items.Count; i++)
-			{
 				PrintMenuItem(_selection == i, i);
-			}
 		}
 
 		private void RefreshAllMenuItems(int selection)
 		{
 			for (int i = 0; i < _itemsYPositions.Length; i++)
 			{
-				Console.SetCursorPosition(CMENU_SELECTION_INDICATOR_X_POS, i + CMENU_SELECTION_INDICATOR_Y_START_POS);
-				Console.Write(selection == i ? MarkedIndicator : UnmarkedIndicator);
+				Console.SetCursorPosition(CMENU_SELECTION_INDICATOR_X_POS , i + CMENU_SELECTION_INDICATOR_Y_START_POS);
+				PrintMenuItem(selection == i, i);
 			}
 		}
 
 		private void PrintMenuItem(bool marked, int itemIndex)
 		{
-			var indicator = marked ? MarkedIndicator : UnmarkedIndicator;
-			Console.WriteLine($"{indicator}\t{_items[itemIndex].Name}");
+			if (marked)
+				_cMenuDrawer.PrintHighlightedElement(_items[itemIndex], HiglightColor, TextColor);
+			else
+				Console.WriteLine($"	{_items[itemIndex].Name}");
 		}
 
-		private void PrintFooter()
-		{
-			string footerString = CMENU_FOOTER_TEXT;
-			ConsoleFormattingUtil.PushColor(FooterColor);
-			int spacesCount = Console.WindowWidth / 2 - footerString.Length / 2;
-			for (int i = 0; i < spacesCount; i++)
-				footerString = footerString.Insert(0, " ");
-			ConsoleFormattingUtil.WriteOnBottomLine(footerString, 1);
-			ConsoleFormattingUtil.PopColor();
-		}
-
-		private void SelectItem(int index)
+		private void StartSelectedItem(int index)
 		{
 			Console.Clear();
 			_isMenuDrawn = false;
-			_items[index].Start();
+			try
+			{
+				_items[index].Start();
+			}
+			catch (Exception e)
+			{
+				Console.Clear();
+				Console.WriteLine($"\"{_items[index]?.Name}\" crashed");
+				ConsoleFormattingUtil.PushForeground(ConsoleColor.Red);
+				ConsoleFormattingUtil.PopForeground();
+				Console.WriteLine(JsonConvert.SerializeObject(e, Formatting.Indented));
+			}
+
 			Console.ReadKey();
 		}
 
@@ -165,27 +144,33 @@ namespace ConsoleMenu
 			switch (Console.ReadKey().Key)
 			{
 				case ConsoleKey.Enter:
-					SelectItem(_selection);
-					break;
+					StartSelectedItem(_selection);
+					return true;
 				case ConsoleKey.UpArrow:
-					NavigateUp();
-					break;
+					Navigate(true);
+					return true;
 				case ConsoleKey.DownArrow:
-					NavigateDown();
-					break;
+					Navigate(false);
+					return true;
 				case ConsoleKey.Escape:
 					return false;
+				default:
+					return false;
 			}
-			return true;
 		}
 
-		private void NavigateUp()
+		private void CleanSelection()
 		{
-			_selection = _selection == 0 ? _items.Count - 1 : _selection - 1;
+			Console.SetCursorPosition(CMENU_SELECTION_INDICATOR_X_POS, _selection + CMENU_SELECTION_INDICATOR_Y_START_POS);
+			Console.WriteLine($" - {(_items[_selection] as IConsoleProgram).Name}");
 		}
 
-		private void NavigateDown()
+		private void Navigate(bool up)
 		{
+			CleanSelection();
+			if(up)
+				_selection = _selection == 0 ? _items.Count - 1 : _selection - 1;
+			else
 			_selection = _selection == _items.Count - 1 ? 0 : _selection + 1;
 		}
 	}

@@ -17,7 +17,10 @@ namespace ConsoleMenu.Utils
 			Console.SetCursorPosition(x, y);
 		}
 
-		public static void PushColor(ConsoleColor color) => Console.ForegroundColor = color;
-		public static void PopColor() => Console.ForegroundColor = ConsoleColor.White;
+		public static void PushForeground(ConsoleColor color) => Console.ForegroundColor = color;
+		public static void PopForeground() => Console.ForegroundColor = ConsoleColor.White;
+
+		public static void PushBackground(ConsoleColor color) => Console.BackgroundColor = color;
+		public static void PopBackgorund() => Console.BackgroundColor = ConsoleColor.Black;
 	}
 }
