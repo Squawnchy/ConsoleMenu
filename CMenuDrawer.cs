@@ -45,7 +45,7 @@ namespace ConsoleMenu
 		{
 			ConsoleFormattingUtil.PushBackground(highlightColor);
 			ConsoleFormattingUtil.PushForeground(textColor);
-			Console.WriteLine($"	{program?.Name}");
+			Console.WriteLine($"\t{program?.Name}");
 			ConsoleFormattingUtil.PopBackgorund();
 			ConsoleFormattingUtil.PopForeground();
 		}

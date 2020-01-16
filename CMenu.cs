@@ -105,7 +105,7 @@ namespace ConsoleMenu
 		{
 			for (int i = 0; i < _itemsYPositions.Length; i++)
 			{
-				Console.SetCursorPosition(CMENU_SELECTION_INDICATOR_X_POS , i + CMENU_SELECTION_INDICATOR_Y_START_POS);
+				Console.SetCursorPosition(CMENU_SELECTION_INDICATOR_X_POS , i + CMENU_SELECTION_INDICATOR_Y_START_POS - 1);
 				PrintMenuItem(selection == i, i);
 			}
 		}
@@ -161,8 +161,8 @@ namespace ConsoleMenu
 
 		private void CleanSelection()
 		{
-			Console.SetCursorPosition(CMENU_SELECTION_INDICATOR_X_POS, _selection + CMENU_SELECTION_INDICATOR_Y_START_POS);
-			Console.WriteLine($" - {(_items[_selection] as IConsoleProgram).Name}");
+			Console.SetCursorPosition(CMENU_SELECTION_INDICATOR_X_POS, _selection + CMENU_SELECTION_INDICATOR_Y_START_POS - 1);
+			Console.WriteLine($"\t{(_items[_selection] as IConsoleProgram).Name}");
 		}
 
 		private void Navigate(bool up)
